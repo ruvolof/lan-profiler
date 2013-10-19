@@ -1,9 +1,12 @@
 #!/usr/bin/env perl
 
+# Core modules
 use strict;
 use warnings;
 use Time::HiRes;
 use lib 'inc';
+
+# From CPAN in 'inc' subfolder
 use IO::Interface::Simple;
 use Net::Netmask;
 use Net::Ping;
@@ -52,7 +55,14 @@ for my $if (@if_list) {
 	}
 	
 	for my $host (@lan) {
-		print "$host is alive.\n" if $ping->ping($host);
+		if ($ping->ping($host)) {
+			print "$host";
+			my $arp_cache = `/sbin/arp -a $host -i $if`;
+			if ($arp_cache !~ m/no match found/) {
+				print "\t", (split(' ', $arp_cache))[3];
+			}
+			print "\n";
+		}
 	}
 	
 	print "\n";

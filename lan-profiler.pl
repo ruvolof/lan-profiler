@@ -16,6 +16,10 @@ use HTTP::Tiny;
 # Setting autoflush for STDOUT
 autoflush STDOUT 1;
 
+##
+# These functions have been taken from Net::MAC::Vendor by
+# Brian D Foy.
+##
 sub extract_oui_from_html {
 	my $html = shift;
 	my $lookup_mac = shift;
@@ -57,6 +61,9 @@ sub parse_oui {
 	$lines[0] =~ s/\S+\s+\S+\s+//;
 	return \@lines;
 }
+##
+# End of code taken from Net::Mac::Vendor.
+##
 
 my @if_list = IO::Interface::Simple->interfaces;
 my $ping = Net::Ping->new('tcp', 0.05);

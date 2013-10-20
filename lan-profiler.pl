@@ -59,7 +59,8 @@ for my $if (@if_list) {
 			print "$host";
 			my $arp_cache = `/sbin/arp -a $host -i $if`;
 			if ($arp_cache !~ m/no match found/) {
-				print "\t", (split(' ', $arp_cache))[3];
+				my $mac = (split(' ', $arp_cache))[3];
+				print "\t", $mac;
 			}
 			print "\n";
 		}

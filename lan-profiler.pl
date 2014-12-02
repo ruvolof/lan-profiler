@@ -8,7 +8,6 @@ use IO::Handle;
 use lib 'inc';
 
 # From CPAN in 'inc' subfolder
-use IO::Interface::Simple;
 use Net::Netmask;
 use Net::Ping;
 use HTTP::Tiny;

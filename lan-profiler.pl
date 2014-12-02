@@ -12,8 +12,9 @@ use Net::Netmask;
 use Net::Ping;
 use HTTP::Tiny;
 
-# Setting autoflush for STDOUT
+# Setting autoflush for STDOUT and STDERR
 autoflush STDOUT 1;
+autoflush STDERR 1;
 
 ##
 # These functions have been taken from Net::MAC::Vendor by

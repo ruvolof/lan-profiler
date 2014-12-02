@@ -64,14 +64,27 @@ sub parse_oui {
 # End of code taken from Net::Mac::Vendor.
 ##
 
-my @if_list = IO::Interface::Simple->interfaces;
+# Retrieving list of interfaces
+my @if_list = (`/sbin/ifconfig -a` =~ m/^(\w+)\b/mg);
+
+# Building hashes from the list
+my @if_h;
+for my $if (@if_list) {
+	my $new_if = {};
+	my $if_info = `/sbin/ifconfig $if`;
+	$new_if->{name} = $if;
+	($new_if->{address}) = ($if_info =~ m/inet addr:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b/);
+	($new_if->{netmask}) = $if_info =~ m/Mask:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\b/;
+	push @if_h, $new_if;
+}
+
 my $ping = Net::Ping->new('tcp', 0.05);
 $ping->hires();
 
-if (scalar(@if_list) => 1) {
+if (scalar(@if_h) => 1) {
 	print "Available interfaces:\n";
-	for my $if (@if_list) {
-		print "\t$if (", $if->address, ")\n" if $if->address;
+	for my $if (@if_h) {
+		print "\t", $if->{name}, " (", $if->{address}, ")\n" if $if->{address};
 	}
 	print "\n";
 }
@@ -80,21 +93,21 @@ else {
 	exit 0;
 }
 
-for my $if (@if_list) {
+for my $if (@if_h) {
 	# Skipping loopback interface
-	if ($if eq 'lo') {
+	if ($if->{name} eq 'lo') {
 		print "Skipping loopback interface.\n\n";
 		next;
 	}
 	# Skipping VirtualBox virtual interfaces
-	elsif ($if =~ m/vbox/) {
+	elsif ($if->{name} =~ m/vbox/) {
 		print "Skipping VirtualBox virtual interfaces.\n\n";
 		next;
 	}
 	
-	print "Scanning $if.\n";
-	my $address = $if->address;
-	my $netmask = $if->netmask;
+	print "Scanning $if->{name}.\n";
+	my $address = $if->{address};
+	my $netmask = $if->{netmask};
 	my @lan;
 	
 	my $block = new2 Net::Netmask ($address, $netmask);
@@ -107,10 +120,23 @@ for my $if (@if_list) {
 		next;
 	}
 	
+	# Looking for arp binary file
+	my $arp_b;
+	if (-f "/sbin/arp") {
+		$arp_b = '/sbin/arp';
+	}
+	elsif (-f '/usr/sbin/arp') {
+		$arp_b = '/usr/sbin/arp';
+	}
+	else {
+		print STDERR "Command arp not found.\n";
+		exit 1;
+	}		
+	
 	for my $host (@lan) {
 		if ($ping->ping($host)) {
 			print "$host";
-			my $arp_cache = `/sbin/arp -a $host -i $if`;
+			my $arp_cache = `$arp_b -a $host -i $if->{name}`;
 			if ($arp_cache !~ m/no match found/) {
 				my $mac = (split(' ', $arp_cache))[3];
 				print "\t", $mac;

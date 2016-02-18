@@ -23,6 +23,9 @@ sub getVendor {
 	return $response->{content};
 }
 
+# Setting language to english to avoid output localization
+$ENV{LANG} = 'en_UK.UTF-8';
+$ENV{LANGUAGE} = 'en';
 # Retrieving list of interfaces
 my @if_list = (`/sbin/ifconfig -a` =~ m/^(\w+)\b/mg);
 

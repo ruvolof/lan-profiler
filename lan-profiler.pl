@@ -105,17 +105,21 @@ sub main {
 		my @lan = $block->enumerate();
 		my $arp_tool = getArpTool();
 		for my $host (@lan) {
-			if ($ping->ping($host)) {
-			print "$host";
-			my $arp_cache = `$arp_tool -a $host -i $name`;
-			if ($arp_cache !~ m/no match found/) {
-				my $mac = (split(' ', $arp_cache))[3];
-				print "\t", $mac;
-				my $vendor = getVendor($mac);
-				print "\t", $vendor;
+			if ($host eq $ipv4) {
+				next;
 			}
-			print "\n";
-		}
+			if ($ping->ping($host)) {
+				print "$host";
+				my $arp_cache = `$arp_tool -a $host -i $name`;
+				if ($arp_cache !~ m/no match found|incomplete/) {
+					my $mac = (split ' ', $arp_cache)[3];
+					print "\t$mac";
+					my $vendor = getVendor($mac);
+					print "\t", $vendor;
+					sleep 2;
+				}
+				print "\n";
+			}
 		}
 	}
 	exit 0;

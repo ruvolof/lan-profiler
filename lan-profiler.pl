@@ -103,9 +103,9 @@ sub main {
 			print "Invalid netmask for $name:$ipv4/$mask.\n";
 		}
 		my @lan = $block->enumerate();
+		my $arp_tool = getArpTool();
 		for my $host (@lan) {
 			if ($ping->ping($host)) {
-			my $arp_tool = getArpTool();
 			print "$host";
 			my $arp_cache = `$arp_tool -a $host -i $name`;
 			if ($arp_cache !~ m/no match found/) {
